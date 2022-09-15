@@ -26,33 +26,48 @@ const headers = new Headers(meta);
 
       const body = {Name: environment_name };
 
-      const response = await fetch(`${octopus_server_url}/api/environments`, {
+      const newEnvResponse = await fetch(`${octopus_server_url}/api/environments`, {
         method: 'post',
         body: JSON.stringify(body),
         headers: headers});
 
-      if(response.status==400) {
+      if(newEnvResponse.status==400) {
         //environment already created, we dont do anything
         return
       }
 
-      if(!response.ok){
-        throw new Error(`Could not create environment: ${response.statusText}`); 
+      if(!newEnvResponse.ok){
+        throw new Error(`Could not create environment: ${newEnvResponse.statusText}`); 
       }
 
       const environmentToCopyFrom = await (await fetch(`${octopus_server_url}/api/environments?name=${environment_to_copy}`, 
       { method: 'GET', headers: headers})).json();
 
-      var urlOfMachinesToAdd = environmentToCopyFrom.Items[0].Links.Machines
-      var machines = await (await fetch(`${octopus_server_url}${urlOfMachinesToAdd}`,{ method: 'GET', headers: headers})).json();
-      
-      var newEnvironment = await response.json()
-      machines.Items.forEach((machine:any): void => {
-        machine.EnvironmentIds.add(newEnvironment.Id);     
-        //todo put the environment again
+      var environmentToCopyFromId = environmentToCopyFrom.Items[0].Id
+      var environmentToCopyFromMachines = await (await fetch(`${octopus_server_url}/api/environments/${environmentToCopyFromId}/machines`,{ method: 'GET', headers: headers})).json();
+    
+      var newEnvironment = await newEnvResponse.json()
+      // environmentToCopyFromMachines.Items.forEach((machine:any): void => {
+      //   machine.EnvironmentIds.add(newEnvironment.Id);
+      //   //todo put the environment again
 
-      });
+      // });
 
+
+      // For each machine, update it with the newly created environment
+      let machines = environmentToCopyFromMachines.Items as any[]
+      for (var machine of machines) {
+        machine.EnvironmentIds.add(newEnvironment.Id);
+
+        var updateMachineEnvironments = await (await fetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
+          method: 'PUT',
+          headers: headers,
+          body: JSON.stringify(machine)
+        })).json();
+        if (!updateMachineEnvironments.ok) {
+          throw new Error(`Could not update machine ${machine.Name} (${machine.Id}) environments with ${newEnvironment.Id}`)
+        }
+      }
 
     }
     else
