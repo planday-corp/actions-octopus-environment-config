@@ -1,0 +1,30 @@
+name: 'Octopus Environment manager'
+description: 'Create or delete an environment in octopus'
+branding:
+  icon: 'truck'
+  color: 'green'
+
+inputs:
+  environment_name:  # change this as needed
+    description: 'Environment name to manipulate'
+    required: true    
+  delete:
+    description: 'Should the environment be deleted?'
+    required: false
+    default: 'false'
+    
+  environment_to_copy:
+    description: 'Environment name from which targets should be added'
+    required: true
+    
+  octopus_server_url:
+    description: 'url of the octopus server'
+    required: true
+    
+  octopus_server_token:
+    description: 'api token of the octopus server'
+    required: true
+
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
