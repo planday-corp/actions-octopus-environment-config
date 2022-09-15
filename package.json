@@ -1,9 +1,9 @@
 {
-  "name": "create-repo",
+  "name": "create-octopus-environment",
   "version": "1.0.0",
   "private": true,
   "type": "commonjs",
-  "description": "TypeScript template action",
+  "description": "Create or delete an environment in octopus",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
