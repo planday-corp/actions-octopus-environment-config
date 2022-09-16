@@ -36,6 +36,7 @@ const headers = {
         core.error(` Could not create environment ${environment_name}`)
         throw new Error(`Could not create environment: ${newEnvResponse.statusText}`); 
       }
+      core.debug(`Creating ${environment_name} environment: done`)
 
       core.info(`Fetching environment to copy from: ${environment_to_copy}`)
       const environmentToCopyFrom = await (await nodeFetch(`${octopus_server_url}/api/environments?name=${environment_to_copy}`, 
@@ -59,7 +60,7 @@ const headers = {
 
       // For each machine, update it with the newly created environment
       for (var machine of machines) {
-        machine.EnvironmentIds.add(newEnvironment.Id);
+        machine.EnvironmentIds.push(newEnvironment.Id);
 
         core.info(`Updating machine ${machine.Id} by associating environment ${newEnvironment.Id}`)
         var updateMachineEnvironments = await (await nodeFetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
