@@ -6,12 +6,11 @@ const delete_environment = core.getInput('delete');
 const environment_to_copy = core.getInput('environment_to_copy');
 const octopus_server_url = core.getInput('octopus_server_url');
 const octopus_api_key = core.getInput('octopus_api_key');
-const meta = {
+const headers = {
     'X-Octopus-ApiKey': octopus_api_key,
     'accept': 'application/json',
     'Content-Type': 'application/json'
 };
-const headers = new Headers(meta);
 (async function main() {
     try {
         if (!delete_environment) {
