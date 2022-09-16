@@ -1,11 +1,11 @@
 "use strict";
 const core = require('@actions/core');
 const queryString = require('query-string');
-const environment_name = core.getInput('environment_name');
-const delete_environment = core.getInput('delete');
-const environment_to_copy = core.getInput('environment_to_copy');
-const octopus_server_url = core.getInput('octopus_server_url');
-const octopus_api_key = core.getInput('octopus_api_key');
+const environment_name = core.getInput('environment_name', { required: true });
+const delete_environment = core.getBooleanInput('delete', { required: true });
+const environment_to_copy = core.getInput('environment_to_copy', { required: true });
+const octopus_server_url = core.getInput('octopus_server_url', { required: true });
+const octopus_api_key = core.getInput('octopus_api_key', { required: true });
 const headers = {
     'X-Octopus-ApiKey': octopus_api_key,
     'accept': 'application/json',
