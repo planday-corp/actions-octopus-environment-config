@@ -6,9 +6,9 @@ const environment_name = core.getInput('environment_name');
 const delete_environment = core.getInput('delete');
 const environment_to_copy = core.getInput('environment_to_copy');
 const octopus_server_url = core.getInput('octopus_server_url');
-const octopus_server_token = core.getInput('octopus_server_token');
+const octopus_api_key = core.getInput('octopus_api_key');
 const meta = {
-  'X-Octopus-ApiKey':  octopus_server_token,
+  'X-Octopus-ApiKey':  octopus_api_key,
   'accept': 'application/json',
   'Content-Type': 'application/json'
 };
