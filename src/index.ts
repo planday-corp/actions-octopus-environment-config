@@ -16,7 +16,7 @@ const headers = {
 (async function main () {
   try {
     if(!delete_environment) {
-      core.info("Creating environment")
+      core.info("Action is set to create environment")
 
       const body = {Name: environment_name };
 
@@ -75,7 +75,7 @@ const headers = {
     }
     else
     {
-      core.info("Deleting environment")
+      core.info("Action is set to delete environment")
     }     
   } 
   catch (e: any) {

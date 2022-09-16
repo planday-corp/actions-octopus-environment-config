@@ -6,23 +6,24 @@ branding:
 
 inputs:
   environment_name:  # change this as needed
-    description: 'Environment name to manipulate'
-    required: true    
+    description: 'Environment name to create or delete'
+    required: true
+
   delete:
     description: 'Should the environment be deleted?'
     required: false
     default: 'false'
-    
+
   environment_to_copy:
     description: 'Environment name from which targets should be added'
     required: true
-    
+
   octopus_server_url:
-    description: 'url of the octopus server'
+    description: 'URL of the octopus server'
     required: true
-    
-  octopus_server_token:
-    description: 'api token of the octopus server'
+
+  octopus_api_key:
+    description: 'API key of the octopus server'
     required: true
 
 runs:

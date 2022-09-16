@@ -14,7 +14,7 @@ const headers = {
 (async function main() {
     try {
         if (!delete_environment) {
-            core.info("Creating environment");
+            core.info("Action is set to create environment");
             const body = { Name: environment_name };
             core.info(`Creating ${environment_name} environment}`);
             const newEnvResponse = await fetch(`${octopus_server_url}/api/environments`, {
@@ -60,7 +60,7 @@ const headers = {
             }
         }
         else {
-            core.info("Deleting environment");
+            core.info("Action is set to delete environment");
         }
     }
     catch (e) {
