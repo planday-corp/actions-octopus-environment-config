@@ -63,11 +63,11 @@ const headers = {
         machine.EnvironmentIds.push(newEnvironment.Id);
 
         core.info(`Updating machine ${machine.Id} by associating environment ${newEnvironment.Id}`)
-        var updateMachineEnvironments = await (await nodeFetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
+        var updateMachineEnvironments = (await nodeFetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
           method: 'PUT',
           headers: headers,
           body: JSON.stringify(machine)
-        })).json();
+        }));
         if (!updateMachineEnvironments.ok) {
           core.error(`Could not update machine ${machine.Name} (${machine.Id}) environments with ${newEnvironment.Id}`)
           throw new Error(`Could not update machine ${machine.Name} (${machine.Id}) environments with ${newEnvironment.Id}`)
