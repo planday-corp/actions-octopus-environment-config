@@ -1,6 +1,7 @@
 "use strict";
 const core = require('@actions/core');
 const queryString = require('query-string');
+const nodeFetch = require('node-fetch');
 const environment_name = core.getInput('environment_name', { required: true });
 const delete_environment = core.getBooleanInput('delete', { required: true });
 const environment_to_copy = core.getInput('environment_to_copy', { required: true });
@@ -14,10 +15,10 @@ const headers = {
 (async function main() {
     try {
         if (!delete_environment) {
-            core.info("Action is set to create environment");
+            core.info("Action is set to create environment...");
             const body = { Name: environment_name };
-            core.info(`Creating ${environment_name} environment}`);
-            const newEnvResponse = await fetch(`${octopus_server_url}/api/environments`, {
+            core.info(`Creating "${environment_name}" environment`);
+            const newEnvResponse = await nodeFetch(`${octopus_server_url}/api/environments`, {
                 method: 'post',
                 body: JSON.stringify(body),
                 headers: headers
@@ -32,11 +33,11 @@ const headers = {
                 throw new Error(`Could not create environment: ${newEnvResponse.statusText}`);
             }
             core.info(`Fetching environment to copy from: ${environment_to_copy}`);
-            const environmentToCopyFrom = await (await fetch(`${octopus_server_url}/api/environments?name=${environment_to_copy}`, { method: 'GET', headers: headers })).json();
+            const environmentToCopyFrom = await (await nodeFetch(`${octopus_server_url}/api/environments?name=${environment_to_copy}`, { method: 'GET', headers: headers })).json();
             var environmentToCopyFromId = environmentToCopyFrom.Items[0].Id;
             core.debug(`Environment id to copy from: ${environmentToCopyFromId}`);
             core.info(`Fetching machines associated with environment ${environment_to_copy} (id: ${environmentToCopyFromId})`);
-            var environmentToCopyFromMachines = await (await fetch(`${octopus_server_url}/api/environments/${environmentToCopyFromId}/machines`, { method: 'GET', headers: headers })).json();
+            var environmentToCopyFromMachines = await (await nodeFetch(`${octopus_server_url}/api/environments/${environmentToCopyFromId}/machines`, { method: 'GET', headers: headers })).json();
             var newEnvironment = await newEnvResponse.json();
             // environmentToCopyFromMachines.Items.forEach((machine:any): void => {
             //   machine.EnvironmentIds.add(newEnvironment.Id);
@@ -48,7 +49,7 @@ const headers = {
             for (var machine of machines) {
                 machine.EnvironmentIds.add(newEnvironment.Id);
                 core.info(`Updating machine ${machine.Id} by associating environment ${newEnvironment.Id}`);
-                var updateMachineEnvironments = await (await fetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
+                var updateMachineEnvironments = await (await nodeFetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
                     method: 'PUT',
                     headers: headers,
                     body: JSON.stringify(machine)
@@ -60,7 +61,7 @@ const headers = {
             }
         }
         else {
-            core.info("Action is set to delete environment");
+            core.info("Action is set to delete environment...");
         }
     }
     catch (e) {
