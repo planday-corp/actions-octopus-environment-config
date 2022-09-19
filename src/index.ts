@@ -42,7 +42,7 @@ const headers = {
 
       if (newEnvResponse.status == 400) {
         // Environment already created, we dont do anything
-        core.info(`Environment ${environment_name} already exists`);
+        core.warn(`Environment ${environment_name} already exists`);
         return;
       }
 
@@ -109,29 +109,29 @@ const headers = {
     } else {
       core.info("Action is set to delete environment...");
 
-      // 1. get environment id
-      // 2. get list of machines associated with environment
-      // 3. remove environment from all machines
-      // 4. remove environment
+      core.info(
+        `Getting environment id for environment ${environment_name}...`
+      );
+      const environmentRequest = await nodeFetch(
+        `${octopus_server_url}/api/environments?name=${environment_name}`,
+        { method: "GET", headers: headers }
+      );
 
-      core.info("Getting environment id...");
-      const envIdRequest = await (
-        await nodeFetch(
-          `${octopus_server_url}/api/environments?name=${environment_name}`,
-          { method: "GET", headers: headers }
-        )
-      ).json();
-
-      if (!envIdRequest.ok) {
-        core.error(`Could not get environment ${environment_name}`);
-        throw new Error(`Could not get environment ${environment_name}`);
+      if (!environmentRequest.ok) {
+        core.error(
+          `Could not get environment ${environment_name}: ${environmentRequest.statusText}`
+        );
+        throw new Error(
+          `Could not get environment ${environment_name}: ${environmentRequest.statusText}`
+        );
       }
 
-      var environmentId = envIdRequest.Id;
+      var environmentResponse = await environmentRequest.json();
+      var environmentId = environmentResponse.Items[0].Id;
       core.debug(`Environment id to delete: ${environmentId}`);
 
       core.info(
-        `Fetching machines associated with environment ${environment_to_copy} (id: ${environmentId})`
+        `Fetching machines associated with environment ${environment_name} (id: ${environmentId})...`
       );
       var environmentMachines = await (
         await nodeFetch(
@@ -141,11 +141,10 @@ const headers = {
       ).json();
 
       let machines = environmentMachines.Items as any[];
-      core.debug(`Machines list: ${machines}`);
 
       // For each machine, update it with to remove the environment
       for (var machine of machines) {
-        // index of the environmentId in the EnvironmentIds array
+        // index of the 'environment id' in the EnvironmentIds array we want to remove
         let index = machine.EnvironmentIds.indexOf(environmentId, 0);
         if (index > -1) {
           machine.EnvironmentIds.splice(index, 1);
@@ -167,21 +166,30 @@ const headers = {
         );
         if (!updateMachineEnvironments.ok) {
           core.error(
-            `Could not update machine ${machine.Name} (${machine.Id}) environments with ${environmentId}`
+            `Could not update machine ${machine.Name} (${machine.Id}) environments with ${environmentId}: ${updateMachineEnvironments.statusText}`
           );
           throw new Error(
-            `Could not update machine ${machine.Name} (${machine.Id}) environments with ${environmentId}`
+            `Could not update machine ${machine.Name} (${machine.Id}) environments with ${environmentId}: ${updateMachineEnvironments.statusText}`
           );
         }
       }
 
-      core.info(`Machines updated, removing ${environment_name}...`);
-      const envDeleteRequst = await (
-        await nodeFetch(`${octopus_server_url}/environments/${environmentId}`, {
-          method: "DELETE",
-          headers: headers,
-        })
-      ).json();
+      core.info(
+        `Machines updated, removing environment ${environment_name} (id: ${environmentId})...`
+      );
+      const environmentDeleteRequest = await nodeFetch(
+        `${octopus_server_url}/api/environments/${environmentId}`,
+        { method: "DELETE", headers: headers }
+      );
+
+      if (!environmentDeleteRequest.ok) {
+        core.error(
+          `Could not delete environment ${environment_name}: ${environmentDeleteRequest.statusText}`
+        );
+        throw new Error(
+          `Could not delete environment ${environment_name}: ${environmentDeleteRequest.statusText}`
+        );
+      }
     }
   } catch (e: any) {
     core.setFailed(e.message);
