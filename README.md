@@ -1,50 +1,59 @@
-# Create Repo Action
+# Octopus Environment Config Action
 
-This action will create a repository in the organization specified. 
+This action will create or a new Octopus Environment or delete an existing one.
+In the case of a creation, it will also add it to chosen the Deployment Target(s).
 
 ## Inputs:
 
-`repo-name`: Name of the repository
+`environment_name`: Name of the environment to create or delete.
 
-`org-name`: Name of the organization
+`delete_environment`: (boolean) Whether or not to delete the environment. Default is `false`.
 
-`org-admin-token`: Org admin token with `repo` and `admin:org` scope
+`environment_to_copy`: Name of the environment to copy from. Example: `stable`.
+
+`octopus_server_url`: URL of the Octopus server of the form `http(s)://xxxxx`.
+
+`octopus_api_key`: API key for the Octopus server.
 
 ## Outputs:
 
-`repo-url`: URL of the newly created repo. Blank if error.
-`repo-fullname`: Fullname of the newly created repo. Blank if error.
+`environment_id`: ID of the newly created environment.
 
-## Demo Workflow:
+## Usage:
 
-### Secrets needed:
+```yaml
+# Creation of a new environment copied from "stable"
+- uses: planday-corp/actions-octopus-environment-config@main
+  with: 
+    environment_name: "my_new_environment"
+    delete: false
+    environment_to_copy: "stable"
+    octopus_server_url: "${{secrets.octopus_server_url}}"
+    octopus_api_key: ${{secrets.octopus_api_key}}
 
-Create a Personal Access Token with relevant scopes and save it as a Repo Secret, or create a github app, and get a token from the app - 
-`ORG_ADMIN_TOKEN`
-
+# Deletion of an environment
+- uses: planday-corp/actions-octopus-environment-config@main
+  with: 
+    environment_name: "my_new_environment"
+    delete: true
+    octopus_server_url: "${{secrets.octopus_server_url}}"
+    octopus_api_key: ${{secrets.octopus_api_key}}
 ```
-name: Create Repo
-on: 
-  workflow_dispatch:
-    inputs:
-      repo-name: 
-        description: 'Name of the repository to be created'
-        required: true
-        default: ''
 
-jobs:
-  create-repository:
-    runs-on: ubuntu-latest
-    name: Creating Organization Repository
-    steps:
-      - name: Use Node.js
-        uses: actions/setup-node@v2
-      - name: Creating GitHub Organization Repository
-        uses: repo-ctrl/create-repo-action@main 
-        id: create-repo
-        with:
-          repo-name: '${{ github.event.inputs.repo-name }}'
-          org-admin-token: '${{ secrets.ORG_ADMIN_TOKEN }}'
-      - name: Log URL to the repo
-        run: echo "The new repo is ${{ steps.create-repo.outputs.repo-url }}"
+## Development
+
+This actions is written with TypeScript for Node.js `v16.10` in `src/index.ts`.
+
+To build this action, run
+
+```shell
+npm install
+npm run build
+```
+
+
+### With `docker`
+
+```shell
+docker run --rm -it -v $(pwd):/tmp/workspace -w /tmp/workspace node:16.10 bash -c 'npm install && npm run build'
 ```
