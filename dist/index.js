@@ -53,7 +53,7 @@ const headers = {
             // For each machine, update it with the newly created environment
             for (var machine of machines) {
                 machine.EnvironmentIds.push(newEnvironment.Id);
-                core.info(`Updating machine ${machine.Id} by associating environment ${newEnvironment.Id}`);
+                core.info(`Updating machine ${machine.Name} (id: ${machine.Id}) by associating environment ${newEnvironment.Id}`);
                 var updateMachineEnvironments = await nodeFetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
                     method: "PUT",
                     headers: headers,
@@ -69,6 +69,46 @@ const headers = {
         }
         else {
             core.info("Action is set to delete environment...");
+            // 1. get environment id
+            // 2. get list of machines associated with environment
+            // 3. remove environment from all machines
+            // 4. remove environment
+            core.info("Getting environment id...");
+            const envIdRequest = await (await nodeFetch(`${octopus_server_url}/api/environments?name=${environment_name}`, { method: "GET", headers: headers })).json();
+            if (!envIdRequest.ok) {
+                core.error(`Could not get environment ${environment_name}`);
+                throw new Error(`Could not get environment ${environment_name}`);
+            }
+            var environmentId = envIdRequest.Id;
+            core.debug(`Environment id to delete: ${environmentId}`);
+            core.info(`Fetching machines associated with environment ${environment_to_copy} (id: ${environmentId})`);
+            var environmentMachines = await (await nodeFetch(`${octopus_server_url}/api/environments/${environmentId}/machines`, { method: "GET", headers: headers })).json();
+            let machines = environmentMachines.Items;
+            core.debug(`Machines list: ${machines}`);
+            // For each machine, update it with to remove the environment
+            for (var machine of machines) {
+                // index of the environmentId in the EnvironmentIds array
+                let index = machine.EnvironmentIds.indexOf(environmentId, 0);
+                if (index > -1) {
+                    machine.EnvironmentIds.splice(index, 1);
+                }
+                core.debug(`Environment Ids associated with machine ${machine.Name}: [${machine.EnvironmentIds}]`);
+                core.info(`Updating machine ${machine.Name} (id: ${machine.Id}) by removing environment ${environmentId}`);
+                var updateMachineEnvironments = await nodeFetch(`${octopus_server_url}/api/machines/${machine.Id}`, {
+                    method: "PUT",
+                    headers: headers,
+                    body: JSON.stringify(machine),
+                });
+                if (!updateMachineEnvironments.ok) {
+                    core.error(`Could not update machine ${machine.Name} (${machine.Id}) environments with ${environmentId}`);
+                    throw new Error(`Could not update machine ${machine.Name} (${machine.Id}) environments with ${environmentId}`);
+                }
+            }
+            core.info(`Machines updated, removing ${environment_name}...`);
+            const envDeleteRequst = await (await nodeFetch(`${octopus_server_url}/environments/${environmentId}`, {
+                method: "DELETE",
+                headers: headers,
+            })).json();
         }
     }
     catch (e) {
