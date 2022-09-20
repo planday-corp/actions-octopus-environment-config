@@ -11,7 +11,7 @@ In the case of a creation, it will also add it to chosen the Deployment Target(s
 
 `environment_to_copy`: Name of the environment to copy from. Example: `stable`.
 
-`octopus_server_url`: URL of the Octopus server of the form `http(s)://xxxxx`.
+`octopus_server_url`: URL of the Octopus server in the form `http(s)://xxxxx`.
 
 `octopus_api_key`: API key for the Octopus server.
 

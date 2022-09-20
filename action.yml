@@ -5,25 +5,25 @@ branding:
   color: 'green'
 
 inputs:
-  environment_name:  # change this as needed
-    description: 'Environment name to create or delete'
+  environment_name:
+    description: 'Name of the environment to create or delete'
     required: true
 
-  delete:
-    description: 'Should the environment be deleted?'
-    required: false
+  delete_environment:
+    description: 'Whether or not to delete the environment. Default is `false`'
+    required: true
     default: 'false'
 
   environment_to_copy:
-    description: 'Environment name from which targets should be added'
+    description: 'Name of the environment from which targets should be added'
     required: true
 
   octopus_server_url:
-    description: 'URL of the octopus server'
+    description: 'URL of the Octopus server in the form `http(s)://xxxxx'
     required: true
 
   octopus_api_key:
-    description: 'API key of the octopus server'
+    description: ' API key for the Octopus server'
     required: true
 
 runs:
