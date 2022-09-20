@@ -33,7 +33,7 @@ const headers = {
             });
             if (newEnvResponse.status == 400) {
                 // Environment already created, we dont do anything
-                core.warn(`Environment ${environment_name} already exists`);
+                core.warning(`Environment ${environment_name} already exists`);
                 return;
             }
             if (!newEnvResponse.ok) {
