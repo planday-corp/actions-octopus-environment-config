@@ -119,14 +119,19 @@ const headers = {
 
       if (!environmentRequest.ok) {
         core.error(
-          `Could not get environment ${environment_name}: ${environmentRequest.statusText}`
+          `Error while getting ${environment_name}: ${environmentRequest.statusText}`
         );
         throw new Error(
-          `Could not get environment ${environment_name}: ${environmentRequest.statusText}`
+          `Error while getting ${environment_name}: ${environmentRequest.statusText}`
         );
       }
 
       var environmentResponse = await environmentRequest.json();
+      if (environmentResponse.Items.length == 0) {
+        core.warning(`Environment ${environment_name} does not exists`);
+        return;
+      }
+
       var environmentId = environmentResponse.Items[0].Id;
       core.debug(`Environment id to delete: ${environmentId}`);
 

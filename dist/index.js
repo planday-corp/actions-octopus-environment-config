@@ -72,10 +72,14 @@ const headers = {
             core.info(`Getting environment id for environment ${environment_name}...`);
             const environmentRequest = await nodeFetch(`${octopus_server_url}/api/environments?name=${environment_name}`, { method: "GET", headers: headers });
             if (!environmentRequest.ok) {
-                core.error(`Could not get environment ${environment_name}: ${environmentRequest.statusText}`);
-                throw new Error(`Could not get environment ${environment_name}: ${environmentRequest.statusText}`);
+                core.error(`Error while getting ${environment_name}: ${environmentRequest.statusText}`);
+                throw new Error(`Error while getting ${environment_name}: ${environmentRequest.statusText}`);
             }
             var environmentResponse = await environmentRequest.json();
+            if (environmentResponse.Items.length == 0) {
+                core.warning(`Environment ${environment_name} does not exists`);
+                return;
+            }
             var environmentId = environmentResponse.Items[0].Id;
             core.debug(`Environment id to delete: ${environmentId}`);
             core.info(`Fetching machines associated with environment ${environment_name} (id: ${environmentId})...`);
